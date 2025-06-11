@@ -2,6 +2,7 @@
   "expo": {
     "name": "Extraordinario_8vo",
     "slug": "Extraordinario_8vo",
+    "scheme": "extraordinario-8vo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
