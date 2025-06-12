@@ -1,4 +1,4 @@
-import React, {JSX} from 'react';
+import React, { JSX } from 'react';
 import {
   View,
   Text,
@@ -30,41 +30,57 @@ export const RegexEditor = ({
   onTextChange,
 }: Props) => {
   const renderAST = (nodes: RegexASTNode[], level = 0): JSX.Element[] => {
-    return nodes.map((node, i) => {
-      const indent = ' '.repeat(level * 2);
-      switch (node.type) {
-        case 'literal':
-          return <Text key={i} style={styles.astText}>{indent}- literal: {node.value}</Text>;
-        case 'anchor':
-          return <Text key={i} style={styles.astText}>{indent}- anchor: {node.kind}</Text>;
-        case 'quantifier':
-          return (
-            <View key={i} style={styles.astGroup}>
-              <Text style={styles.astText}>{indent}- quantifier: {node.min} to {node.max ?? '∞'}</Text>
-              {renderAST([node.child], level + 1)}
-            </View>
-          );
-        case 'group':
-          return (
-            <View key={i} style={styles.astGroup}>
-              <Text style={styles.astText}>{indent}- group:</Text>
-              {renderAST(node.children, level + 1)}
-            </View>
-          );
-        case 'alternation':
-          return (
-            <View key={i} style={styles.astGroup}>
-              <Text style={styles.astText}>{indent}- alternation:</Text>
-              {node.options.map((opt, j) => (
-                <View key={j} style={styles.astSubGroup}>
-                  <Text style={styles.astText}>{indent}  option {j + 1}:</Text>
-                  {renderAST(opt, level + 2)}
-                </View>
-              ))}
-            </View>
-          );
-      }
-    });
+    return nodes
+      .map((node, i) => {
+        const indent = ' '.repeat(level * 2);
+        switch (node.type) {
+          case 'literal':
+            return (
+              <Text key={i} style={styles.astText}>
+                {indent}- literal: {node.value}
+              </Text>
+            );
+          case 'anchor':
+            return (
+              <Text key={i} style={styles.astText}>
+                {indent}- anchor: {node.kind}
+              </Text>
+            );
+          case 'quantifier':
+            return (
+              <View key={i} style={styles.astGroup}>
+                <Text style={styles.astText}>
+                  {indent}- quantifier: {node.min} to {node.max ?? '∞'}
+                </Text>
+                {renderAST([node.child], level + 1)}
+              </View>
+            );
+          case 'group':
+            return (
+              <View key={i} style={styles.astGroup}>
+                <Text style={styles.astText}>{indent}- group:</Text>
+                {renderAST(node.children, level + 1)}
+              </View>
+            );
+          case 'alternation':
+            return (
+              <View key={i} style={styles.astGroup}>
+                <Text style={styles.astText}>{indent}- alternation:</Text>
+                {node.options.map((opt, j) => (
+                  <View key={j} style={styles.astSubGroup}>
+                    <Text style={styles.astText}>
+                      {indent}  option {j + 1}:
+                    </Text>
+                    {renderAST(opt, level + 2)}
+                  </View>
+                ))}
+              </View>
+            );
+          default:
+            return null;
+        }
+      })
+      .filter((el): el is JSX.Element => el !== null && el !== undefined);
   };
 
   return (
@@ -79,9 +95,7 @@ export const RegexEditor = ({
           value={pattern}
           onChangeText={onPatternChange}
         />
-        {regexError && (
-          <Text style={styles.errorText}>⚠ {regexError}</Text>
-        )}
+        {regexError && <Text style={styles.errorText}>⚠ {regexError}</Text>}
 
         <InputText
           placeholder="Texto a evaluar"
@@ -92,7 +106,11 @@ export const RegexEditor = ({
 
         <Text style={styles.label}>Coincidencias:</Text>
         {Array.isArray(matches) && matches.length > 0 ? (
-          matches.map((m, i) => <Text key={i} style={styles.matchText}>{m}</Text>)
+          matches.map((m, i) => (
+            <Text key={i} style={styles.matchText}>
+              {m}
+            </Text>
+          ))
         ) : (
           <Text style={styles.noMatch}>No hay coincidencias</Text>
         )}

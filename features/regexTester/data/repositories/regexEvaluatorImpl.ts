@@ -11,22 +11,42 @@ export function parseRegex(pattern: string): RegexASTNode[] {
     return pattern[index++];
   }
 
+  function eof(): boolean {
+    return index >= pattern.length;
+  }
+
   function parseEscaped(): string {
     const char = next();
-    if (char === 'd') return '\\d';
-    if (char === 'w') return '\\w';
-    if (char === 's') return '\\s';
-    return '\\' + char; // fallback
+    if ('dwsDWSbB'.includes(char)) return '\\' + char;
+    if ('.+*?^$|()[]{}'.includes(char)) return '\\' + char;
+    return '\\' + char;
+  }
+
+  function parseCharacterClass(): RegexASTNode {
+    let content = '';
+    next(); // consume '['
+    if (peek() === '^') {
+      content += next(); // consume '^'
+    }
+    while (!eof() && peek() !== ']') {
+      if (peek() === '\\') {
+        next();
+        content += '\\' + next();
+      } else {
+        content += next();
+      }
+    }
+    next(); // consume ']'
+    return { type: 'characterClass', value: content };
   }
 
   function parseQuantifier(): { min: number; max: number } | null {
     if (peek() === '{') {
       let quantifier = '';
-      while (peek() !== '}' && index < pattern.length) {
+      while (peek() !== '}' && !eof()) {
         quantifier += next();
       }
       quantifier += next(); // consume '}'
-
       const match = quantifier.match(/\{(\d+)(,(\d+)?)?\}/);
       if (match) {
         const min = parseInt(match[1], 10);
@@ -43,13 +63,12 @@ export function parseRegex(pattern: string): RegexASTNode[] {
       next();
       return { min: 0, max: 1 };
     }
-
     return null;
   }
 
   function parseGroup(): RegexASTNode[] {
     const children: RegexASTNode[] = [];
-    while (index < pattern.length) {
+    while (!eof()) {
       const char = peek();
 
       if (char === ')') {
@@ -80,8 +99,10 @@ export function parseRegex(pattern: string): RegexASTNode[] {
       let node: RegexASTNode;
 
       if (char === '\\') {
-        next(); // consume '\'
+        next();
         node = { type: 'literal', value: parseEscaped() };
+      } else if (char === '[') {
+        node = parseCharacterClass();
       } else {
         node = { type: 'literal', value: next() };
       }

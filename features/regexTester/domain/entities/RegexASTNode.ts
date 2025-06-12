@@ -3,4 +3,5 @@ export type RegexASTNode =
   | { type: 'group'; children: RegexASTNode[] }
   | { type: 'quantifier'; min: number; max: number; child: RegexASTNode }
   | { type: 'alternation'; options: RegexASTNode[][] }
-  | { type: 'anchor'; kind: '^' | '$' };
+  | { type: 'anchor'; kind: '^' | '$' }
+  | { type: 'characterClass'; value: string };  // <-- Agregado aquí
