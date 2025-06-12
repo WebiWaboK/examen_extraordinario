@@ -7,6 +7,8 @@ export default function RegexEditorScreen() {
     pattern,
     text,
     matches,
+    regexError,
+    ast, // ✅ Asegúrate de traer esto del ViewModel
     handlePatternChange,
     handleTextChange,
   } = useRegexEditorViewModel();
@@ -18,6 +20,8 @@ export default function RegexEditorScreen() {
           pattern={pattern}
           text={text}
           matches={matches}
+          regexError={regexError}
+          ast={ast} // ✅ Lo pasamos aquí al componente
           onPatternChange={handlePatternChange}
           onTextChange={handleTextChange}
         />
