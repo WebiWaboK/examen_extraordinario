@@ -1,10 +1,22 @@
-import { Stack } from "expo-router";
+import { Drawer } from 'expo-router/drawer';
 
 export default function Layout() {
-    return (
-        <Stack>
-            <Stack.Screen name="index" options={{title: "Expresiones regulares"}}/>
-            <Stack.Screen name="regex_manual" options={{title: "Expresiones que se Usan"}}/>
-        </Stack>
-    )
+  return (
+    <Drawer>
+      <Drawer.Screen
+        name="index"
+        options={{
+          drawerLabel: "Editor de Regex",
+          title: "Expresiones regulares",
+        }}
+      />
+      <Drawer.Screen
+        name="regex_manual"
+        options={{
+          drawerLabel: "Manual de símbolos",
+          title: "Expresiones que se Usan",
+        }}
+      />
+    </Drawer>
+  );
 }
