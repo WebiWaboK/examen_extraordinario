@@ -1,4 +1,5 @@
-import { SafeAreaView } from 'react-native';
+import React from 'react';
+import { SafeAreaView, StyleSheet } from 'react-native';
 import { RegexEditor } from '../components/organisms/RegexEditor';
 import { useRegexEditorViewModel } from '../viewmodels/useRegexEditorViewModel';
 
@@ -14,7 +15,7 @@ export default function RegexEditorScreen() {
   } = useRegexEditorViewModel();
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={styles.container}>
       <RegexEditor
         pattern={pattern}
         text={text}
@@ -27,3 +28,10 @@ export default function RegexEditorScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FAFAFA',
+  },
+});

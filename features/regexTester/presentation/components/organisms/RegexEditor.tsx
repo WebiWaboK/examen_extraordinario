@@ -10,6 +10,7 @@ import {
 import { InputText } from '../atoms/InputText';
 import { RegexASTNode } from '../../../domain/entities/RegexASTNode';
 import { InteractiveRailroad } from '../organisms/InteractiveRailroad';
+import { RegexSuggestions } from '../molecules/RegexSuggestions';
 
 interface Props {
   pattern: string;
@@ -40,18 +41,27 @@ export const RegexEditor = ({
     >
       <ScrollView contentContainerStyle={styles.container}>
         <InputText
-          placeholder="Expresión regular"
+          placeholder="Ej: ^\\d{3}-\\d{2}-\\d{4}$"
           value={pattern}
           onChangeText={onPatternChange}
         />
+        {!pattern && (
+          <RegexSuggestions onSelect={onPatternChange} />
+        )}
+
         {regexError && <Text style={styles.errorText}>⚠ {regexError}</Text>}
 
         <InputText
-          placeholder="Texto a evaluar"
+          placeholder="Ej: 123-45-6789"
           value={text}
           onChangeText={onTextChange}
           multiline
         />
+        {!text && (
+          <Text style={styles.suggestion}>
+            Escribe un texto de ejemplo para probar tu patrón.
+          </Text>
+        )}
 
         {hasPattern && (
           <>
@@ -101,5 +111,11 @@ const styles = StyleSheet.create({
     color: 'red',
     marginVertical: 8,
     fontWeight: '600',
+  },
+  suggestion: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: '#888',
+    marginVertical: 8,
   },
 });
