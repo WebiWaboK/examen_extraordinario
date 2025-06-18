@@ -25,9 +25,7 @@ export function parseRegex(pattern: string): RegexASTNode[] {
   function parseCharacterClass(): RegexASTNode {
     let content = '';
     next(); // consume '['
-    if (peek() === '^') {
-      content += next(); // consume '^'
-    }
+    if (peek() === '^') content += next();
     while (!eof() && peek() !== ']') {
       if (peek() === '\\') {
         next();
@@ -43,14 +41,18 @@ export function parseRegex(pattern: string): RegexASTNode[] {
   function parseQuantifier(): { min: number; max: number } | null {
     if (peek() === '{') {
       let quantifier = '';
-      while (peek() !== '}' && !eof()) {
+      while (!eof() && peek() !== '}') {
         quantifier += next();
       }
-      quantifier += next(); // consume '}'
+      if (peek() === '}') quantifier += next();
       const match = quantifier.match(/\{(\d+)(,(\d+)?)?\}/);
       if (match) {
         const min = parseInt(match[1], 10);
-        const max = match[3] ? parseInt(match[3], 10) : (match[2] ? Infinity : min);
+        const max = match[3]
+          ? parseInt(match[3], 10)
+          : match[2]
+          ? Infinity
+          : min;
         return { min, max };
       }
     } else if (peek() === '*') {
@@ -68,18 +70,25 @@ export function parseRegex(pattern: string): RegexASTNode[] {
 
   function parseGroup(): RegexASTNode[] {
     const children: RegexASTNode[] = [];
+
     while (!eof()) {
       const char = peek();
 
       if (char === ')') {
-        next();
+        next(); // consume ')'
         break;
       }
 
       if (char === '(') {
-        next();
+        next(); // consume '('
         const groupChildren = parseGroup();
-        children.push({ type: 'group', children: groupChildren });
+        const groupNode: RegexASTNode = { type: 'group', children: groupChildren };
+        const quant = parseQuantifier();
+        if (quant) {
+          children.push({ type: 'quantifier', min: quant.min, max: quant.max, child: groupNode });
+        } else {
+          children.push(groupNode);
+        }
         continue;
       }
 
@@ -103,6 +112,8 @@ export function parseRegex(pattern: string): RegexASTNode[] {
         node = { type: 'literal', value: parseEscaped() };
       } else if (char === '[') {
         node = parseCharacterClass();
+      } else if ('*+?{}'.includes(char)) {
+        throw new Error(`Cuantificador "${char}" inesperado sin valor previo`);
       } else {
         node = { type: 'literal', value: next() };
       }
@@ -114,6 +125,7 @@ export function parseRegex(pattern: string): RegexASTNode[] {
         children.push(node);
       }
     }
+
     return children;
   }
 
