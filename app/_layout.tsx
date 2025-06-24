@@ -17,6 +17,13 @@ export default function Layout() {
           title: "Expresiones que se Usan",
         }}
       />
+      <Drawer.Screen
+        name="regex_recent"
+        options={{
+          drawerLabel: "Expreciones Recientes",
+          title: "Expresiones Recientes",
+        }}
+      />
     </Drawer>
   );
 }
