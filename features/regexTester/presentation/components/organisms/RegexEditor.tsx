@@ -11,8 +11,6 @@ import { InputText } from '../atoms/InputText';
 import { RegexASTNode } from '../../../domain/entities/RegexASTNode';
 import { InteractiveRailroad } from '../organisms/InteractiveRailroad';
 import { RegexSuggestions } from '../molecules/RegexSuggestions';
-import { RecentPatternList } from '../molecules/RecentPatternList';
-import { useRecentPatternsViewModel } from '../../viewmodels/useRecentPatternsViewModel';
 
 interface Props {
   pattern: string;
@@ -35,18 +33,6 @@ export const RegexEditor = ({
 }: Props) => {
   const hasPattern = pattern.trim().length > 0;
 
-  const {
-    recentPatterns,
-    save,
-    clear,
-  } = useRecentPatternsViewModel();
-
-  React.useEffect(() => {
-    if (hasPattern) {
-      save(pattern);
-    }
-  }, [pattern]);
-
   return (
     <KeyboardAvoidingView
       style={styles.flex}
@@ -61,14 +47,7 @@ export const RegexEditor = ({
         />
 
         {!hasPattern && (
-          <>
-            <RegexSuggestions onSelect={onPatternChange} />
-            <RecentPatternList
-              patterns={recentPatterns}
-              onSelect={onPatternChange}
-              onClear={clear}
-            />
-          </>
+          <RegexSuggestions onSelect={onPatternChange} />
         )}
 
         {regexError && <Text style={styles.errorText}>⚠ {regexError}</Text>}
