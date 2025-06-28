@@ -1,22 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STORAGE_KEY = 'recent_patterns';
-const MAX_PATTERNS = 10;
+const STORAGE_KEY = 'recent_regex_patterns';
 
 export const getRecentPatterns = async (): Promise<string[]> => {
-  const raw = await AsyncStorage.getItem(STORAGE_KEY);
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  const stored = await AsyncStorage.getItem(STORAGE_KEY);
+  return stored ? JSON.parse(stored) : [];
 };
 
 export const saveRecentPattern = async (pattern: string): Promise<void> => {
-  const existing = await getRecentPatterns();
-  const updated = [pattern, ...existing.filter(p => p !== pattern)].slice(0, MAX_PATTERNS);
+  const current = await getRecentPatterns();
+  const updated = [pattern, ...current.filter(p => p !== pattern)].slice(0, 20);
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 };
 

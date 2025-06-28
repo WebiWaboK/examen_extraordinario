@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import { InputText } from '../atoms/InputText';
 import { RegexASTNode } from '../../../domain/entities/RegexASTNode';
 import { InteractiveRailroad } from '../organisms/InteractiveRailroad';
 import { RegexSuggestions } from '../molecules/RegexSuggestions';
+import { useRecentPatternsViewModel } from '../../viewmodels/useRecentPatternsViewModel';
 
 interface Props {
   pattern: string;
@@ -33,6 +34,14 @@ export const RegexEditor = ({
 }: Props) => {
   const hasPattern = pattern.trim().length > 0;
 
+  const { save } = useRecentPatternsViewModel();
+
+  useEffect(() => {
+    if (hasPattern && !regexError) {
+      save(pattern);
+    }
+  }, [pattern, regexError]);
+
   return (
     <KeyboardAvoidingView
       style={styles.flex}
@@ -46,11 +55,11 @@ export const RegexEditor = ({
           onChangeText={onPatternChange}
         />
 
-        {!hasPattern && (
-          <RegexSuggestions onSelect={onPatternChange} />
-        )}
+        {!hasPattern && <RegexSuggestions onSelect={onPatternChange} />}
 
-        {regexError && <Text style={styles.errorText}>⚠ {regexError}</Text>}
+        {regexError && (
+          <Text style={styles.errorText}>⚠ {regexError}</Text>
+        )}
 
         <InputText
           placeholder="Ej: 123-45-6789"
@@ -58,6 +67,7 @@ export const RegexEditor = ({
           onChangeText={onTextChange}
           multiline
         />
+
         {!text && (
           <Text style={styles.suggestion}>
             Escribe un texto de ejemplo para probar tu patrón.

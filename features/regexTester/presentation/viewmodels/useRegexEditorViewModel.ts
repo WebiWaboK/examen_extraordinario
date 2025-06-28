@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { RegexASTNode } from '../../domain/entities/RegexASTNode';
 import { parseRegex } from '../../data/repositories/regexEvaluatorImpl';
-import { useRecentPatternsViewModel } from './useRecentPatternsViewModel';
+import { saveRecentPattern } from '../../data/repositories/regexPersistence';
 
 export const useRegexEditorViewModel = () => {
   const [pattern, setPattern] = useState('');
@@ -10,32 +10,30 @@ export const useRegexEditorViewModel = () => {
   const [regexError, setRegexError] = useState<string | null>(null);
   const [ast, setAst] = useState<RegexASTNode[]>([]);
 
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedRef = useRef<string>('');
-  const { save: saveRecent } = useRecentPatternsViewModel();
 
   const handlePatternChange = (value: string) => {
     setPattern(value);
     testRegex(value, text);
 
     try {
-      const astResult = parseRegex(value);
-      setAst(astResult);
+      const parsed = parseRegex(value);
+      setAst(parsed);
       setRegexError(null);
 
-      // ✅ Si está bien, se espera 5s sin escribir para guardar
-      if (timerRef.current) clearTimeout(timerRef.current);
-      if (value.trim() !== '' && value !== lastSavedRef.current) {
-        timerRef.current = setTimeout(async () => {
-          await saveRecent(value);
-          lastSavedRef.current = value;
-        }, 5000);
-      }
+      // Guardar si la expresión es válida, no vacía y diferente a la última guardada
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (value.trim() === '' || value === lastSavedRef.current) return;
+
+      debounceRef.current = setTimeout(async () => {
+        await saveRecentPattern(value);
+        lastSavedRef.current = value;
+      }, 5000);
 
     } catch (err: any) {
       setAst([]);
       setRegexError(err.message);
-      if (timerRef.current) clearTimeout(timerRef.current); // 🛑 Cancela si tiene error
     }
   };
 
@@ -58,7 +56,7 @@ export const useRegexEditorViewModel = () => {
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, []);
 

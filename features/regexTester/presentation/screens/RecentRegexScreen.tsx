@@ -1,5 +1,11 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, Alert } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  Alert,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { useRecentPatternsViewModel } from '../viewmodels/useRecentPatternsViewModel';
 import { RecentPatternList } from '../components/molecules/RecentPatternList';
@@ -21,15 +27,23 @@ export default function RecentRegexScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <RecentPatternList
-        patterns={recentPatterns}
-        onSelect={handleSelect}
-        onClear={handleClear}
-      />
+      {recentPatterns.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>Historial vacío</Text>
+        </View>
+      ) : (
+        <RecentPatternList
+          patterns={recentPatterns}
+          onSelect={handleSelect}
+          onClear={handleClear}
+        />
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
+  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  emptyText: { fontSize: 16, color: '#888', fontStyle: 'italic' },
 });
