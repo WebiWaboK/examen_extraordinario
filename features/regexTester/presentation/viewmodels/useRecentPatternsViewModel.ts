@@ -7,7 +7,7 @@ import {
 
 export const useRecentPatternsViewModel = () => {
   const [recentPatterns, setRecentPatterns] = useState<string[]>([]);
-  const timeoutRef = useRef<any>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastPatternRef = useRef<string>('');
 
   const load = async () => {
@@ -35,7 +35,7 @@ export const useRecentPatternsViewModel = () => {
   const clear = async () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     await clearRecentPatterns();
-    setRecentPatterns([]);
+    await load();
     lastPatternRef.current = '';
   };
 
@@ -50,5 +50,6 @@ export const useRecentPatternsViewModel = () => {
     recentPatterns,
     save,
     clear,
+    load,
   };
 };
