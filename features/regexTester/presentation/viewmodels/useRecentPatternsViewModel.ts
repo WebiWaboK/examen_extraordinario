@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   getRecentPatterns,
   saveRecentPattern,
@@ -7,36 +7,48 @@ import {
 
 export const useRecentPatternsViewModel = () => {
   const [recentPatterns, setRecentPatterns] = useState<string[]>([]);
-  const [lastSaved, setLastSaved] = useState<string>('');
+  const timeoutRef = useRef<any>(null);
+  const lastPatternRef = useRef<string>('');
 
   const load = async () => {
     const data = await getRecentPatterns();
     setRecentPatterns(data);
   };
 
-  const save = async (pattern: string) => {
+  const save = (pattern: string) => {
     const trimmed = pattern.trim();
-    if (!trimmed || trimmed === lastSaved || recentPatterns.includes(trimmed)) return;
+    if (!trimmed || trimmed === lastPatternRef.current) return;
 
-    await saveRecentPattern(trimmed);
-    setLastSaved(trimmed);
-    await load();
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        await saveRecentPattern(trimmed);
+        lastPatternRef.current = trimmed;
+        await load();
+      } catch (e) {
+        console.error("Error saving pattern:", e);
+      }
+    }, 5000);
   };
 
   const clear = async () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     await clearRecentPatterns();
     setRecentPatterns([]);
-    setLastSaved('');
+    lastPatternRef.current = '';
   };
 
   useEffect(() => {
     load();
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, []);
 
   return {
     recentPatterns,
     save,
     clear,
-    load,
   };
 };

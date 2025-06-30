@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, ScrollView } from 'react-native';
 import { RegexEditor } from '../components/organisms/RegexEditor';
 import { RegexASTNode } from '../../domain/entities/RegexASTNode';
@@ -13,8 +13,7 @@ export default function RegexEditorScreen() {
   const [regexError, setRegexError] = useState<string | null>(null);
   const [ast, setAst] = useState<RegexASTNode[]>([]);
 
-  const { recentPatterns, save } = useRecentPatternsViewModel();
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { recentPatterns, save, clear } = useRecentPatternsViewModel();
 
   const handlePatternChange = (value: string) => {
     setPattern(value);
@@ -24,17 +23,10 @@ export default function RegexEditorScreen() {
       const astResult = parseRegex(value);
       setAst(astResult);
       setRegexError(null);
-
-      // Debounce: solo guardar si es una expresión válida
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        save(value);
-      }, 5000);
-
+      save(value);
     } catch (err: any) {
       setAst([]);
       setRegexError(err.message);
-      if (debounceRef.current) clearTimeout(debounceRef.current); // No guardes si hay error
     }
   };
 
@@ -68,11 +60,11 @@ export default function RegexEditorScreen() {
           onTextChange={handleTextChange}
         />
 
-        {pattern.trim() === '' && recentPatterns.length > 0 && (
+        {recentPatterns.length > 0 && pattern.trim() === '' && (
           <RecentPatternList
-            patterns={[recentPatterns[recentPatterns.length - 1]]} // Mostrar solo la última
+            patterns={recentPatterns.slice(0, 5)}
             onSelect={setPattern}
-            onClear={() => {}}
+            onClear={clear}
           />
         )}
       </ScrollView>
